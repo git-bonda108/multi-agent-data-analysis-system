@@ -1,0 +1,476 @@
+manifest:
+  version: "0.1.2"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: git-bonda108/multi-agent-data-analysis-system
+    source: https://github.com/git-bonda108/multi-agent-data-analysis-system
+    branch: main
+    commit: "90acc5ec"
+    scope: [tools/advanced_data_tools.py, data-insights.py, tools/__init__.py]
+  issued:
+    by: A2AS.org
+    at: '2026-01-26T16:16:27Z'
+  signatures:
+    digest: sha256:bWRmqTWptKAy-vqX7XonrTANQS9HQ9J7jVxGp7CeOq0
+    key: ed25519:yAE2s2s9fwCEKwAXGyRK25lplJrQSW2kCm6d8vfvuLM
+    sig: ed25519:8A07CZklBjk-fwWkSm12OjTQk6cq_121oe5vk0FPDcQnP8YtENT025aHBMhpMr957qJDT50dhqmdgdlptv4ICA
+
+agents:
+  analysis_agent:
+    type: instance
+    models: [gpt-4.1]
+    tools: [query_data, filter_data, multi_filter, group_by_aggregate, advanced_group_by, order_by, get_data_info, get_data_quality,
+      detect_outliers, execute_sql_query]
+    params:
+      function: create_agents
+      name: Analysis Agent
+      instructions: [You are an expert data analyst with comprehensive SQL and pandas knowledge., 'You have access to a dataframe
+          with columns: {list}.', 'Your capabilities:', '- Execute complex queries with ORDER BY, GROUP BY, WHERE, LIMIT',
+        '- Filter data with single or multiple conditions (AND/OR logic)', '- Group and aggregate data with multiple functions',
+        '- Sort data by any column (ascending/descending)', '- Detect outliers and data quality issues', '- Handle natural
+          language queries and convert them to operations', 'SQL-like operations supported:', '- ORDER BY column [ASC/DESC]',
+        '- GROUP BY column [WITH aggregations]', '- WHERE conditions (>, <, >=, <=, ==, !=, contains, between)', '- LIMIT/TOP/FIRST
+          N rows', '- Multiple WHERE conditions with AND/OR logic', 'When users ask for queries like:', '- "Show top 10 rows
+          ordered by salary"', '- "Group by department and calculate average salary"', '- "Filter where age > 30 and salary
+          > 50000"', '- "Order by age descending, limit 20"', 'Use the appropriate tools to execute these operations. Always
+          provide clear, structured results.']
+  formatting_agent:
+    type: instance
+    models: [gpt-4.1]
+    tools: [format_as_table, create_summary_table, format_correlation_table, format_insights]
+    params:
+      function: create_agents
+      name: Formatting Agent
+      instructions: [You are a formatting expert specializing in structuring data and insights into readable table formats.,
+        'You have access to a dataframe with columns: {list}.', 'Your capabilities:', '- Convert any data to table format',
+        '- Create summary tables', '- Format correlation tables', '- Structure insights into tables', 'Always format results
+          as clear, readable tables. Use proper column headers and organize data logically.']
+  orchestrator_agent:
+    type: instance
+    models: [gpt-4.1]
+    params:
+      function: create_agents
+      name: Orchestrator Agent
+      instructions: [You are an orchestrator that routes user queries to the appropriate specialized agents., 'Available agents:',
+        '1. Analysis Agent - For data exploration, querying, filtering, grouping', '2. Statistical Agent - For statistics,
+          correlations, feature relationships, hypothesis testing', '3. Visualization Agent - For creating charts, graphs,
+          and visualizations', 4. Formatting Agent - For formatting results into tables, 'Based on the user''s query, determine
+          which agent(s) should handle it:', '- Data queries, filtering, grouping → Analysis Agent', '- Statistics, correlations,
+          relationships → Statistical Agent', '- Charts, plots, visualizations → Visualization Agent', '- Table formatting,
+          structured output → Formatting Agent', 'For complex queries, you may need to coordinate multiple agents. Always
+          ensure results are properly formatted in tables when possible.', 'The dataframe has columns: {list}']
+  statistical_agent:
+    type: instance
+    models: [gpt-4.1]
+    tools: [calculate_statistics, analyze_correlations, feature_relationships, hypothesis_test, distribution_analysis, feature_importance]
+    params:
+      function: create_agents
+      name: Statistical Agent
+      instructions: [You are a statistical analysis expert specializing in advanced statistics and feature relationships.,
+        'You have access to a dataframe with columns: {list}.', 'Your capabilities:', '- Calculate comprehensive statistics',
+        '- Analyze correlations between features', '- Identify feature relationships', '- Perform hypothesis testing', '-
+          Analyze distributions', '- Calculate feature importance', Always provide statistical insights and explain what the
+          results mean. Focus on feature relationships and dependencies.]
+  visualization_agent:
+    type: instance
+    models: [gpt-4.1]
+    tools: [create_histogram, create_scatter, create_correlation_heatmap, create_bar_chart, create_box_plot, create_line_plot,
+      create_pair_plot]
+    params:
+      function: create_agents
+      name: Visualization Agent
+      instructions: [You are a data visualization expert specializing in creating insightful charts and graphs., 'You have
+          access to a dataframe with columns: {list}.', 'Your capabilities:', '- Create histograms for distributions', '-
+          Create scatter plots for relationships', '- Create correlation heatmaps', '- Create bar charts for categorical data',
+        '- Create box plots for distributions', '- Create line plots for trends', '- Create pair plots for multiple variables',
+        Always choose the most appropriate visualization type for the data and question. Make charts informative and visually
+          appealing.]
+
+models:
+  gpt-4.1:
+    type: default
+    agents: [analysis_agent, statistical_agent, visualization_agent, formatting_agent, orchestrator_agent]
+
+tools:
+  advanced_group_by:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Advanced group by with multiple aggregations. Format: ''column1:mean,column2:sum''.'
+  analyze_correlations:
+    type: decorator
+    agents: [statistical_agent]
+    params:
+      description: 'Analyze correlations between numeric features. Methods: ''pearson'', ''spearman'', ''kendall''.'
+  calculate_statistics:
+    type: decorator
+    agents: [statistical_agent]
+    params:
+      description: Calculate comprehensive descriptive statistics for all numeric columns.
+  create_bar_chart:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a bar chart for a categorical column.
+  create_box_plot:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a box plot to show distribution and outliers.
+  create_correlation_heatmap:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a correlation heatmap showing relationships between all numeric features.
+  create_histogram:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a histogram to show distribution of a column.
+  create_line_plot:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a line plot for time series or sequential data.
+  create_pair_plot:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a pair plot showing relationships between multiple numeric columns.
+  create_scatter:
+    type: decorator
+    agents: [visualization_agent]
+    params:
+      description: Create a scatter plot to show relationship between two columns.
+  create_summary_table:
+    type: decorator
+    agents: [formatting_agent]
+    params:
+      description: Create a formatted summary statistics table from the current dataframe.
+  detect_outliers:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Detect outliers in a column. Methods: ''iqr'' or ''zscore''.'
+  distribution_analysis:
+    type: decorator
+    agents: [statistical_agent]
+    params:
+      description: Analyze the distribution of a column including skewness, kurtosis, percentiles.
+  execute_sql_query:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: |-
+        Execute SQL-like queries. Supports: SELECT, WHERE, GROUP BY, ORDER BY, LIMIT.
+        Example: 'SELECT age, salary WHERE age > 30 ORDER BY salary DESC LIMIT 10'
+  feature_importance:
+    type: decorator
+    agents: [statistical_agent]
+    params:
+      description: Calculate feature importance based on correlation with target column.
+  feature_relationships:
+    type: decorator
+    agents: [statistical_agent]
+    params:
+      description: Analyze relationships between all feature pairs, including correlations and dependencies.
+  filter_data:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Filter data. Conditions: ''greater'', ''less'', ''equal'', ''contains'', ''between''.'
+  format_as_table:
+    type: decorator
+    agents: [formatting_agent]
+    params:
+      description: Convert any data into a formatted table (DataFrame).
+  format_correlation_table:
+    type: decorator
+    agents: [formatting_agent]
+    params:
+      description: Format correlation matrix into a readable table format.
+  format_insights:
+    type: decorator
+    agents: [formatting_agent]
+    params:
+      description: Format insights into a structured table. Analyzes the dataframe and creates an insights table.
+  get_data_info:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: Get comprehensive information about the dataset.
+  get_data_quality:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: Get comprehensive data quality summary including missing values, nulls, duplicates, completeness.
+  group_by_aggregate:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Group by a column and aggregate. Functions: ''sum'', ''mean'', ''count'', ''max'', ''min'', ''std''.'
+  hypothesis_test:
+    type: decorator
+    agents: [statistical_agent]
+    params:
+      description: 'Perform hypothesis testing. Test types: ''ttest'', ''normality''.'
+  multi_filter:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Apply multiple filter conditions. Conditions format: ''column1>30,column2==value''. Logic: ''AND'' or
+        ''OR''.'
+  order_by:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Sort data by a column. Direction: ''asc'' or ''desc''.'
+  query_data:
+    type: decorator
+    agents: [analysis_agent]
+    params:
+      description: 'Query the dataframe using natural language. Supports SQL-like operations: ORDER BY, GROUP BY, WHERE, LIMIT.'
+
+imports:
+  Agent: agents.Agent
+  Any: typing.Any
+  data_tools: data_tools
+  Dict: typing.Dict
+  formatting_tools: formatting_tools
+  function_tool: agents.function_tool
+  io: io
+  List: typing.List
+  load_dotenv: dotenv.load_dotenv
+  np: numpy
+  Optional: typing.Optional
+  os: os
+  pd: pandas
+  re: re
+  Runner: agents.Runner
+  ssl: ssl
+  st: streamlit
+  statistical_tools: statistical_tools
+  Union: typing.Union
+  visualization_tools: visualization_tools
+
+functions:
+  advanced_group_by:
+    type: tool
+    module: data-insights
+    args: [group_by, aggregations]
+    params:
+      returns: str
+  analyze_correlations:
+    type: tool
+    module: data-insights
+    args: [method]
+    params:
+      returns: str
+  calculate_statistics:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  complex_query:
+    type: sync
+    module: tools.advanced_data_tools
+    args: [dataframe, query]
+    params:
+      returns: pd.DataFrame
+  create_agents:
+    type: sync
+    module: data-insights
+    args: [dataframe, model_name]
+  create_bar_chart:
+    type: tool
+    module: data-insights
+    args: [column, top_n]
+    params:
+      returns: str
+  create_box_plot:
+    type: tool
+    module: data-insights
+    args: [column]
+    params:
+      returns: str
+  create_correlation_heatmap:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  create_histogram:
+    type: tool
+    module: data-insights
+    args: [column, bins]
+    params:
+      returns: str
+  create_line_plot:
+    type: tool
+    module: data-insights
+    args: [x_column, y_column]
+    params:
+      returns: str
+  create_pair_plot:
+    type: tool
+    module: data-insights
+    args: [columns]
+    params:
+      returns: str
+  create_scatter:
+    type: tool
+    module: data-insights
+    args: [x_column, y_column]
+    params:
+      returns: str
+  create_summary_table:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  detect_outliers:
+    type: tool
+    module: data-insights
+    args: [column, method]
+    params:
+      returns: str
+  distribution_analysis:
+    type: tool
+    module: data-insights
+    args: [column]
+    params:
+      returns: str
+  execute_sql_like_query:
+    type: sync
+    module: tools.advanced_data_tools
+    args: [dataframe, select_columns, where_conditions, group_by, order_by, order_direction, limit]
+    params:
+      returns: pd.DataFrame
+  execute_sql_query:
+    type: tool
+    module: data-insights
+    args: [query_description]
+    params:
+      returns: str
+  extract_dataframe_from_result:
+    type: sync
+    module: data-insights
+    args: [result_text, dataframe, query]
+    params:
+      returns: Optional[pd.DataFrame]
+  feature_importance:
+    type: tool
+    module: data-insights
+    args: [target_column]
+    params:
+      returns: str
+  feature_relationships:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  filter_data:
+    type: tool
+    module: data-insights
+    args: [column, condition, value]
+    params:
+      returns: str
+  format_as_table:
+    type: tool
+    module: data-insights
+    args: [data, title]
+    params:
+      returns: str
+  format_correlation_table:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  format_insights:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  get_data_info:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  get_data_quality:
+    type: tool
+    module: data-insights
+    params:
+      returns: str
+  get_data_quality_summary:
+    type: sync
+    module: tools.advanced_data_tools
+    args: [dataframe]
+    params:
+      returns: pd.DataFrame
+  group_by_aggregate:
+    type: tool
+    module: data-insights
+    args: [group_by, agg_function, agg_column]
+    params:
+      returns: str
+  hypothesis_test:
+    type: tool
+    module: data-insights
+    args: [column, test_type, value]
+    params:
+      returns: str
+  load_combined_data:
+    type: sync
+    module: data-insights
+    args: [files]
+  main:
+    type: sync
+    module: data-insights
+  multi_condition_filter:
+    type: sync
+    module: tools.advanced_data_tools
+    args: [dataframe, conditions, logic]
+    params:
+      returns: pd.DataFrame
+  multi_filter:
+    type: tool
+    module: data-insights
+    args: [conditions, logic]
+    params:
+      returns: str
+  order_by:
+    type: tool
+    module: data-insights
+    args: [column, direction]
+    params:
+      returns: str
+  parse_natural_language_query:
+    type: sync
+    module: tools.advanced_data_tools
+    args: [query, dataframe]
+    params:
+      returns: Dict
+  parse_text_to_dataframe:
+    type: sync
+    module: data-insights
+    args: [text, dataframe]
+    params:
+      returns: Optional[pd.DataFrame]
+  query_data:
+    type: tool
+    module: data-insights
+    args: [query]
+    params:
+      returns: str
+  route_query:
+    type: sync
+    module: data-insights
+    args: [query, agents, dataframe]
+    params:
+      returns: tuple
+
+variables:
+  OPENAI_API_KEY:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [data-insights]
