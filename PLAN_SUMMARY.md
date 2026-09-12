@@ -212,11 +212,11 @@ Orchestrator Agent (Routes Query)
 
 ## 🔍 Why Virtual Environment Wasn't Created Initially
 
-The virtual environment is now created at `/Users/macbook/Documents/genai-data-analyzer/data-analyzer/venv/`
+The virtual environment is now created at `venv/` inside the project directory
 
 To use it:
 ```bash
-cd /Users/macbook/Documents/genai-data-analyzer/data-analyzer
+cd multi-agent-data-analysis
 source venv/bin/activate
 pip install -r requirements.txt
 ```

@@ -30,8 +30,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full component map, [do
 Requires Python 3.9+ and an OpenAI API key.
 
 ```bash
-git clone https://github.com/git-bonda108/multi-agent-data-analysis-system.git
-cd multi-agent-data-analysis-system
+git clone https://github.com/git-bonda108/multi-agent-data-analysis.git
+cd multi-agent-data-analysis
 
 # One-shot setup (creates venv, installs deps, writes a .env template):
 ./setup.sh
